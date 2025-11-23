@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="Legged_robot">
+  <link
+    name="hip">
+    <inertial>
+      <origin
+        xyz="-0.00564830078198353 0.0349469887099489 0.00646542786747288"
+        rpy="0 0 0" />
+      <mass
+        value="5.01371669411541E-05" />
+      <inertia
+        ixx="4.29482473170853E-10"
+        ixy="3.04031850951552E-28"
+        ixz="-3.12273218868088E-27"
+        iyy="4.10766306626453E-10"
+        iyz="1.97082982379683E-26"
+        izz="4.91957013924296E-11" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Legged_robot/meshes/hip.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Legged_robot/meshes/hip.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="link_2_1">
+    <inertial>
+      <origin
+        xyz="-3.46944695195361E-18 -0.007 0.0015"
+        rpy="0 0 0" />
+      <mass
+        value="7.58539816339745E-05" />
+      <inertia
+        ixx="1.12491102285555E-09"
+        ixy="1.58327539121478E-25"
+        ixz="-8.0533998033665E-27"
+        iyy="7.75290368297784E-11"
+        iyz="-2.02176912194815E-26"
+        izz="1.09723135879864E-09" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Legged_robot/meshes/link_2_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Legged_robot/meshes/link_2_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hip_link2_1"
+    type="continuous">
+    <origin
+      xyz="-0.0056483 -0.0084654 0.034295"
+      rpy="1.5708 -0.7412 0" />
+    <parent
+      link="hip" />
+    <child
+      link="link_2_1" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="link_1_1">
+    <inertial>
+      <origin
+        xyz="3.46944695195361E-18 -0.007 0.0015"
+        rpy="0 0 0" />
+      <mass
+        value="8.78539816339741E-05" />
+      <inertia
+        ixx="1.69611842160531E-09"
+        ixy="5.81611368201348E-26"
+        ixz="5.73831936565062E-27"
+        iyy="9.793998820723E-11"
+        iyz="1.73601271964456E-26"
+        izz="1.65484970892585E-09" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Legged_robot/meshes/link_1_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Legged_robot/meshes/link_1_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="link_2_1_link_1_1"
+    type="continuous">
+    <origin
+      xyz="0 -0.0140000000000002 0"
+      rpy="0 0 -1.36435679641865" />
+    <parent
+      link="link_2_1" />
+    <child
+      link="link_1_1" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="foot_1">
+    <inertial>
+      <origin
+        xyz="0.003776466955325 -0.00150811184848229 0.0015"
+        rpy="0 0 0" />
+      <mass
+        value="5.29595525039593E-05" />
+      <inertia
+        ixx="1.15269420092446E-10"
+        ixy="1.57930643597851E-11"
+        ixz="-1.47711077731433E-27"
+        iyy="5.66854901453677E-10"
+        iyz="4.41463142348606E-27"
+        izz="4.7329772946213E-10" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Legged_robot/meshes/foot_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Legged_robot/meshes/foot_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="link_1_1_foot_1"
+    type="continuous">
+    <origin
+      xyz="0 -0.014 0"
+      rpy="0 0 0.00661019113303249" />
+    <parent
+      link="link_1_1" />
+    <child
+      link="foot_1" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="link_2_2">
+    <inertial>
+      <origin
+        xyz="0 -0.00699999999999999 0.0015"
+        rpy="0 0 0" />
+      <mass
+        value="7.58539816339745E-05" />
+      <inertia
+        ixx="1.12491102285555E-09"
+        ixy="2.98187862400166E-26"
+        ixz="7.57569422647247E-28"
+        iyy="7.75290368297785E-11"
+        iyz="3.54987407349455E-27"
+        izz="1.09723135879864E-09" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Legged_robot/meshes/link_2_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Legged_robot/meshes/link_2_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="hip_link_2_2"
+    type="continuous">
+    <origin
+      xyz="-0.00564830078198353 -0.00146542786747287 0.0342954427878388"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="hip" />
+    <child
+      link="link_2_2" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="link_1_2">
+    <inertial>
+      <origin
+        xyz="4.33680868994202E-18 -0.007 0.0015"
+        rpy="0 0 0" />
+      <mass
+        value="8.78539816339742E-05" />
+      <inertia
+        ixx="1.69611842160531E-09"
+        ixy="3.83298047516027E-25"
+        ixz="-5.16843412126143E-27"
+        iyy="9.79399882072298E-11"
+        iyz="-2.49317921505589E-27"
+        izz="1.65484970892585E-09" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Legged_robot/meshes/link_1_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Legged_robot/meshes/link_1_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="link_2_2_link_1_2"
+    type="continuous">
+    <origin
+      xyz="0 -0.014 0"
+      rpy="0 0 -0.0617710617631891" />
+    <parent
+      link="link_2_2" />
+    <child
+      link="link_1_2" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="foot_2">
+    <inertial>
+      <origin
+        xyz="0.00377646695532497 -0.001508111848482 0.0015"
+        rpy="0 0 0" />
+      <mass
+        value="5.29595525039593E-05" />
+      <inertia
+        ixx="1.15269420092446E-10"
+        ixy="1.5793064359785E-11"
+        ixz="1.34055660260736E-27"
+        iyy="5.66854901453677E-10"
+        iyz="-1.15066580541509E-27"
+        izz="4.7329772946213E-10" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Legged_robot/meshes/foot_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Legged_robot/meshes/foot_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="link_1_2_foot_2"
+    type="continuous">
+    <origin
+      xyz="0 -0.014 0"
+      rpy="0 0 0.0617710617631891" />
+    <parent
+      link="link_1_2" />
+    <child
+      link="foot_2" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+</robot>
