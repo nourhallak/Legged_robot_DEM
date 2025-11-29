@@ -26,6 +26,7 @@ def generate_and_save_trajectories(duration=4.0, dt=0.01):
 
     # --- Trajectory Arrays ---
     com_traj = np.zeros((num_steps, 3))
+    hip_orientation_traj = np.zeros((num_steps, 4)) # For quaternion w, x, y, z
     foot1_traj = np.zeros((num_steps, 3))
     foot2_traj = np.zeros((num_steps, 3))
 
@@ -76,12 +77,16 @@ def generate_and_save_trajectories(duration=4.0, dt=0.01):
         com_traj[i, 1] = stance_foot_pos[1] * 0.5 # Shift CoM towards stance foot
         com_traj[i, 2] = com_height
 
+        # --- Hip Orientation Trajectory ---
+        # Keep the hip horizontal (no rotation)
+        hip_orientation_traj[i, :] = np.array([1.0, 0, 0, 0]) # w, x, y, z
+
     # Save trajectories
     np.save("com_trajectory.npy", com_traj)
+    np.save("hip_orientation_trajectory.npy", hip_orientation_traj)
     np.save("foot1_trajectory.npy", foot1_traj)
     np.save("foot2_trajectory.npy", foot2_traj)
-    print("Generated and saved 'com_trajectory.npy', 'foot1_trajectory.npy', and 'foot2_trajectory.npy'")
+    print("Generated and saved 'com_trajectory.npy', 'hip_orientation_trajectory.npy', 'foot1_trajectory.npy', and 'foot2_trajectory.npy'")
 
 if __name__ == "__main__":
     generate_and_save_trajectories()
-

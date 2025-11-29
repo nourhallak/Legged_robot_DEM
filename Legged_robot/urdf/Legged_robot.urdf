@@ -1,11 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
-     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
-     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
-<robot
-  name="Legged_robot">
+<robot name="Legged_robot">
   <link
     name="hip">
+    <mujoco>
+      <site name="com_site" type="sphere" size="0.005" rgba="1 0 0 0.5" pos="0 0 0"/>
+    </mujoco>
     <inertial>
       <origin
         xyz="-0.00564830078198353 0.0349469887099489 0.00646542786747288"
@@ -14,7 +12,7 @@
         value="5.01371669411541E-05" />
       <inertia
         ixx="4.29482473170853E-10"
-        ixy="3.04031850951552E-28"
+        ixy="2.95588739100365E-28"
         ixz="-3.12273218868088E-27"
         iyy="4.10766306626453E-10"
         iyz="1.97082982379683E-26"
@@ -48,16 +46,16 @@
     name="link_2_1">
     <inertial>
       <origin
-        xyz="-3.46944695195361E-18 -0.007 0.0015"
+        xyz="0 -0.007 0.0015"
         rpy="0 0 0" />
       <mass
         value="7.58539816339745E-05" />
       <inertia
         ixx="1.12491102285555E-09"
-        ixy="1.58327539121478E-25"
-        ixz="-8.0533998033665E-27"
+        ixy="7.10858338912758E-26"
+        ixz="1.21720076523357E-26"
         iyy="7.75290368297784E-11"
-        iyz="-2.02176912194815E-26"
+        iyz="8.60440399356178E-27"
         izz="1.09723135879864E-09" />
     </inertial>
     <visual>
@@ -85,32 +83,38 @@
     </collision>
   </link>
   <joint
-    name="hip_link2_1"
-    type="continuous">
+    name="hip_link/_2_1"
+    type="revolute">
     <origin
       xyz="-0.0056483 -0.0084654 0.034295"
-      rpy="1.5708 -0.7412 0" />
+      rpy="1.5708 -0.75702 0" />
     <parent
       link="hip" />
     <child
       link="link_2_1" />
     <axis
       xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+    <motor name="hip_to_link2_1" ctrlrange="-10.0 10.0" />
   </joint>
   <link
     name="link_1_1">
     <inertial>
       <origin
-        xyz="3.46944695195361E-18 -0.007 0.0015"
+        xyz="5.20417042793042E-18 -0.007 0.0015"
         rpy="0 0 0" />
       <mass
-        value="8.78539816339741E-05" />
+        value="8.78539816339742E-05" />
       <inertia
         ixx="1.69611842160531E-09"
-        ixy="5.81611368201348E-26"
-        ixz="5.73831936565062E-27"
-        iyy="9.793998820723E-11"
-        iyz="1.73601271964456E-26"
+        ixy="5.26681405648998E-25"
+        ixz="4.51496037895184E-27"
+        iyy="9.79399882072297E-11"
+        iyz="-3.07959924106589E-26"
         izz="1.65484970892585E-09" />
     </inertial>
     <visual>
@@ -139,32 +143,41 @@
   </link>
   <joint
     name="link_2_1_link_1_1"
-    type="continuous">
+    type="revolute">
     <origin
-      xyz="0 -0.0140000000000002 0"
-      rpy="0 0 -1.36435679641865" />
+      xyz="0 -0.014 0"
+      rpy="0 0 -1.3614" />
     <parent
       link="link_2_1" />
     <child
       link="link_1_1" />
     <axis
       xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+    <motor name="link21_to_link11" ctrlrange="-10.0 10.0" />
   </joint>
   <link
     name="foot_1">
+    <mujoco>
+      <site name="foot1_site" type="sphere" size="0.005" rgba="0 1 0 0.5" pos="0 0 0"/>
+    </mujoco>
     <inertial>
       <origin
-        xyz="0.003776466955325 -0.00150811184848229 0.0015"
+        xyz="0.00377646695532485 -0.00150811184848213 0.0015"
         rpy="0 0 0" />
       <mass
         value="5.29595525039593E-05" />
       <inertia
         ixx="1.15269420092446E-10"
-        ixy="1.57930643597851E-11"
-        ixz="-1.47711077731433E-27"
-        iyy="5.66854901453677E-10"
-        iyz="4.41463142348606E-27"
-        izz="4.7329772946213E-10" />
+        ixy="1.5793064359785E-11"
+        ixz="3.93928134751848E-27"
+        iyy="5.66854901453676E-10"
+        iyz="-3.32389131736677E-27"
+        izz="4.73297729462129E-10" />
     </inertial>
     <visual>
       <origin
@@ -192,19 +205,25 @@
   </link>
   <joint
     name="link_1_1_foot_1"
-    type="continuous">
+    type="revolute">
     <origin
       xyz="0 -0.014 0"
-      rpy="0 0 0.00661019113303249" />
+      rpy="0 0 0.6044" />
     <parent
       link="link_1_1" />
     <child
       link="foot_1" />
     <axis
       xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+    <motor name="link11_to_foot1" ctrlrange="-10.0 10.0" />
   </joint>
   <link
-    name="link_2_2">
+    name="link2_2">
     <inertial>
       <origin
         xyz="0 -0.00699999999999999 0.0015"
@@ -214,9 +233,9 @@
       <inertia
         ixx="1.12491102285555E-09"
         ixy="2.98187862400166E-26"
-        ixz="7.57569422647247E-28"
+        ixz="7.57569422647246E-28"
         iyy="7.75290368297785E-11"
-        iyz="3.54987407349455E-27"
+        iyz="3.70764625453876E-27"
         izz="1.09723135879864E-09" />
     </inertial>
     <visual>
@@ -245,16 +264,22 @@
   </link>
   <joint
     name="hip_link_2_2"
-    type="continuous">
+    type="revolute">
     <origin
-      xyz="-0.00564830078198353 -0.00146542786747287 0.0342954427878388"
-      rpy="1.5707963267949 0 0" />
+      xyz="-0.0056483 -0.0014654 0.034295"
+      rpy="1.5708 0 0" />
     <parent
       link="hip" />
     <child
-      link="link_2_2" />
+      link="link2_2" />
     <axis
       xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+    <motor name="hip_to_link22" ctrlrange="-10.0 10.0" />
   </joint>
   <link
     name="link_1_2">
@@ -266,10 +291,10 @@
         value="8.78539816339742E-05" />
       <inertia
         ixx="1.69611842160531E-09"
-        ixy="3.83298047516027E-25"
-        ixz="-5.16843412126143E-27"
+        ixy="3.70373350444886E-25"
+        ixz="-5.15888271227709E-27"
         iyy="9.79399882072298E-11"
-        iyz="-2.49317921505589E-27"
+        iyz="-5.79327766869373E-27"
         izz="1.65484970892585E-09" />
     </inertial>
     <visual>
@@ -298,19 +323,28 @@
   </link>
   <joint
     name="link_2_2_link_1_2"
-    type="continuous">
+    type="revolute">
     <origin
       xyz="0 -0.014 0"
-      rpy="0 0 -0.0617710617631891" />
+      rpy="0 0 -0.061771" />
     <parent
-      link="link_2_2" />
+      link="link2_2" />
     <child
       link="link_1_2" />
     <axis
       xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+    <motor name="link22_to_link12" ctrlrange="-10.0 10.0" />
   </joint>
   <link
     name="foot_2">
+    <mujoco>
+      <site name="foot2_site" type="sphere" size="0.005" rgba="0 0 1 0.5" pos="0 0 0"/>
+    </mujoco>
     <inertial>
       <origin
         xyz="0.00377646695532497 -0.001508111848482 0.0015"
@@ -320,9 +354,9 @@
       <inertia
         ixx="1.15269420092446E-10"
         ixy="1.5793064359785E-11"
-        ixz="1.34055660260736E-27"
+        ixz="9.59697969000011E-28"
         iyy="5.66854901453677E-10"
-        iyz="-1.15066580541509E-27"
+        iyz="-2.97525851487859E-27"
         izz="4.7329772946213E-10" />
     </inertial>
     <visual>
@@ -351,15 +385,21 @@
   </link>
   <joint
     name="link_1_2_foot_2"
-    type="continuous">
+    type="revolute">
     <origin
       xyz="0 -0.014 0"
-      rpy="0 0 0.0617710617631891" />
+      rpy="0 0 0.061771" />
     <parent
       link="link_1_2" />
     <child
       link="foot_2" />
     <axis
       xyz="0 0 1" />
-  </joint>
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+    <motor name="link12_to_foot2" ctrlrange="-10.0 10.0" />
+  </joint> 
 </robot>
