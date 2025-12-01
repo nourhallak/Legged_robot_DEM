@@ -5,6 +5,7 @@
   
   <default>
     <joint damping="0.1" armature="0.01"/>
+    <geom friction="1.0 0.1 0.1"/>
   </default>
 
   <asset>
@@ -19,11 +20,11 @@
 
     <worldbody>
     <geom name="floor" type="plane" pos="0 0 0.3263" size="1 1 0.1" rgba="0.8 0.9 0.8 1" condim="3"/>
-    <body name="hip" pos="0 0 0.34">
+    <body name="hip" pos="0 -0.0049659 0.42">
       <inertial mass="0.5" pos="0 0 0" diaginertia="0.001 0.001 0.001"/>
-      <joint name="root_x" type="slide" axis="1 0 0" range="-0.1 0.1" damping="1.0"/>
-      <joint name="root_y" type="slide" axis="0 1 0" range="-0.1 0.1" damping="1.0"/>
-      <joint name="root_rz" type="hinge" axis="0 0 1" range="-3.14 3.14" damping="0.5"/>
+      <joint name="root_x" type="slide" axis="1 0 0" range="-0.1 0.1" damping="0.1"/>
+      <joint name="root_y" type="slide" axis="0 1 0" range="-0.1 0.1" damping="0.1"/>
+      <joint name="root_rz" type="hinge" axis="0 0 1" range="-3.14 3.14" damping="0.1"/>
       <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="hip"/>
 
     <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="hip" conaffinity="1" contype="1"/>
