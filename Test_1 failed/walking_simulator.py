@@ -134,7 +134,7 @@ for step in range(num_steps):
         print(f"Step {step:3d}: Hip_Z={target_hip[2]:.4f}m, F1_Z={foot1_act[2]:.4f}m (target {target_foot1[2]:.4f}m), Error={error:.4f}m")
 
 print("="*70)
-print(f"\n✓ Walking Simulation Complete!")
+print("\n[OK] Walking Simulation Complete!")
 print(f"  Total steps: {num_steps}")
 print(f"  Total X distance: {hip_traj[-1, 0]:.4f}m")
 print(f"  Mean IK error: {np.mean(errors):.6f}m ({np.mean(errors)*1000:.2f}mm)")

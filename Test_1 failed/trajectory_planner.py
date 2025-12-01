@@ -22,16 +22,17 @@ num_steps = 400
 stride_length = 0.005  # 5mm forward per step
 step_cycle = 200       # 200 steps per full gait cycle (L-stance, R-swing, R-stance, L-swing)
 
-# From geometry analysis: feet are 6-12mm ABOVE hip in neutral position
-# Floor is at z=0.21m, so:
-# - Hip at 0.21m means feet naturally at 0.215-0.222m
-# - For walking, we want feet in contact with ground at z=0.21m
-hip_z_nominal = 0.205  # Slightly BELOW feet (so feet contact ground at ~0.21m)
-hip_z_max = 0.215      # Maximum height during double support
-hip_z_min = 0.200      # Minimum height during single support (pendulum sag)
+# Hip controls the body height during walking (inverted pendulum)
+# Work WITH robot geometry: feet are naturally 10-12mm above hip
+# So when hip is at 0.228m, feet will naturally be at ~0.238-0.240m
+# Make hip LOWER so feet appear below hip in the plot
+# Hip at 0.215m -> feet at ~0.227m (clearly above, for swing)
+hip_z_nominal = 0.215  # Nominal body height (LOWER than before)
+hip_z_max = 0.225      # Maximum height during double support
+hip_z_min = 0.205      # Minimum height during single support
 
-foot_z_ground = 0.210  # Where feet should contact ground
-foot_z_swing = 0.225   # Swing phase clearance (15mm above ground)
+foot_z_ground = 0.213  # Where feet should contact ground
+foot_z_swing = 0.221   # Swing phase clearance
 
 # Create time array
 time_array = np.linspace(0, num_steps - 1, num_steps)
@@ -156,7 +157,7 @@ np.save('hip_trajectory.npy', hip_trajectory)
 np.save('foot1_trajectory.npy', foot1_trajectory)
 np.save('foot2_trajectory.npy', foot2_trajectory)
 
-print("✓ Trajectories saved:")
+print("[OK] Trajectories saved:")
 print(f"  hip_trajectory.npy ({hip_trajectory.shape})")
 print(f"  foot1_trajectory.npy ({foot1_trajectory.shape})")
 print(f"  foot2_trajectory.npy ({foot2_trajectory.shape})")
@@ -234,7 +235,7 @@ ax.grid(True, alpha=0.3)
 
 plt.tight_layout()
 plt.savefig('walking_trajectories_planned.png', dpi=150)
-print("✓ Trajectory plots saved: walking_trajectories_planned.png")
+print("[OK] Trajectory plots saved: walking_trajectories_planned.png")
 print()
 
 print("="*70)
