@@ -83,7 +83,7 @@
     </collision>
   </link>
   <joint
-    name="hip_link/_2_1"
+    name="hip_link_2_1"
     type="revolute">
     <origin
       xyz="-0.0056483 -0.0084654 0.034295"
@@ -95,10 +95,10 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-1.57"
+      upper="1.57"
+      effort="10"
+      velocity="3.14" />
     <motor name="hip_to_link2_1" ctrlrange="-10.0 10.0" />
   </joint>
   <link
@@ -154,10 +154,10 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-2.0944"
+      upper="1.0472"
+      effort="10"
+      velocity="3.14" />
     <motor name="link21_to_link11" ctrlrange="-10.0 10.0" />
   </joint>
   <link
@@ -216,10 +216,10 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-1.57"
+      upper="1.57"
+      effort="10"
+      velocity="3.14" />
     <motor name="link11_to_foot1" ctrlrange="-10.0 10.0" />
   </joint>
   <link
@@ -275,10 +275,10 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-1.57"
+      upper="1.57"
+      effort="10"
+      velocity="3.14" />
     <motor name="hip_to_link22" ctrlrange="-10.0 10.0" />
   </joint>
   <link
@@ -334,10 +334,10 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-2.0944"
+      upper="1.0472"
+      effort="10"
+      velocity="3.14" />
     <motor name="link22_to_link12" ctrlrange="-10.0 10.0" />
   </joint>
   <link
@@ -396,10 +396,10 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-1.57"
+      upper="1.57"
+      effort="10"
+      velocity="3.14" />
     <motor name="link12_to_foot2" ctrlrange="-10.0 10.0" />
   </joint> 
 </robot>

@@ -33,49 +33,67 @@ def inject_sites_into_mjcf(mjcf_content):
     """
     Manually injects required <site> tags into the MJCF content by targeting 
     the specific <body> names that correspond to the URDF links.
+    Uses a more robust approach to find the exact closing </body> tag.
+    Sites are created but made invisible for cleaner visualization.
     """
     
     print("\n--- MJCF Site Injection Process ---")
 
-    # Site definitions for MJCF (using "site" tag within the body)
-    foot1_site_tag = '<site name="foot1_site" pos="0 0 0" size="0.01" rgba="1 0 0 1"/>' 
-    foot2_site_tag = '<site name="foot2_site" pos="0 0 0" size="0.01" rgba="0 0 1 1"/>' 
-    com_site_tag = '<site name="com_site" pos="0 0 0" size="0.01" rgba="0 1 0 1"/>' 
+    # Site definitions for MJCF - with very small size to make nearly invisible
+    foot1_site_tag = '<site name="foot1_site" pos="0 0 0" size="0.0001" rgba="1 0 0 0"/>'
+    foot2_site_tag = '<site name="foot2_site" pos="0 0 0" size="0.0001" rgba="0 0 1 0"/>'
+    com_site_tag = '<site name="com_site" pos="0 0 0" size="0.0001" rgba="0 1 0 0"/>'
     
     injected_content = mjcf_content
 
     # Map of URDF Link Name -> MJCF Site Tag
     injections = {
-        # The URDF 'hip' link becomes the MJCF 'hip' body
-        'hip': com_site_tag,
-        # The URDF 'foot_1' link becomes the MJCF 'foot_1' body
+        'link_2_1': com_site_tag,
         'foot_1': foot1_site_tag,
-        # The URDF 'foot_2' link becomes the MJCF 'foot_2' body
         'foot_2': foot2_site_tag,
     }
 
     for body_name, site_tag in injections.items():
-        # Pattern to find the closing tag of the target body
-        # We look for: (<body name="BODY_NAME" ... > ... ) (</body>)
-        # Using a non-greedy match (.*?) to capture content up to the closing tag of the *inner* body.
-        # MuJoCo often nests elements like geoms/joints right before the closing body tag.
+        # Find the body opening tag
+        open_pattern = r'<body\s+name=["\']' + re.escape(body_name) + r'["\'][^>]*>'
+        open_match = re.search(open_pattern, injected_content)
         
-        # This regex targets the first occurrence of the body's closing tag, 
-        # ensuring the site is placed correctly inside the body.
-        pattern = r'(<link\s+name="' + re.escape(body_name) + r'"[\s\S]*?)(</link>)'
+        if not open_match:
+            print(f"❌ Warning: Could not find <body> '{body_name}' for site injection.")
+            continue
         
-        def replacement(match):
-            # Insert the site tag before the closing </body> tag
-            return match.group(1) + f'\n        {site_tag}\n    ' + match.group(2)
-
-        # Use re.subn to perform the replacement once
-        new_content, count = re.subn(pattern, replacement, injected_content, count=1, flags=re.IGNORECASE)
+        # Find the matching closing </body> tag by counting open/close tags
+        start_pos = open_match.end()
+        open_count = 1
+        pos = start_pos
+        close_tag_pos = -1
         
-        if count == 1:
+        while pos < len(injected_content) and open_count > 0:
+            next_open = injected_content.find('<body', pos)
+            next_close = injected_content.find('</body>', pos)
+            
+            if next_close == -1:
+                print(f"❌ Warning: Mismatched tags for body '{body_name}'.")
+                break
+            
+            if next_open != -1 and next_open < next_close:
+                open_count += 1
+                pos = next_open + 1
+            else:
+                open_count -= 1
+                if open_count == 0:
+                    close_tag_pos = next_close
+                pos = next_close + 1
+        
+        if close_tag_pos != -1:
+            # Insert the site before the closing </body> tag
+            new_content = (injected_content[:close_tag_pos] + 
+                          f'\n        {site_tag}' + 
+                          injected_content[close_tag_pos:])
             injected_content = new_content
             print(f"-> Injected site into body '{body_name}' (Success).")
         else:
-            print(f"❌ Warning: Could not find <link> '{body_name}' for site injection.")
+            print(f"❌ Warning: Could not locate closing tag for body '{body_name}'.")
 
     return injected_content
 
@@ -90,30 +108,127 @@ def inject_environment_into_mjcf(mjcf_content):
     
     # Define the stones
     stones_xml = ""
-    num_stones = 50
-    np.random.seed(42) # for reproducibility
-    for i in range(num_stones):
-        # Randomly position stones in a patch
-        pos_x = np.random.uniform(-0.1, 0.2)
-        pos_y = np.random.uniform(-0.1, 0.1)
-        pos_z = 0.005 # Start just above the floor
-        stone_size = np.random.uniform(0.004, 0.008)
-        
-        stones_xml += f"""
-    <body name="stone_{i}" pos="{pos_x} {pos_y} {pos_z}">
-      <joint type="free" damping="0.01"/>
-      <geom type="sphere" size="{stone_size}" mass="0.001" rgba="0.4 0.4 0.4 1" condim="3" friction="0.8 0.1 0.1"/>
-    </body>
-"""
+    num_stones = 0 # Set to 0 to disable stones
 
     # Find the <worldbody> tag and insert the floor and stones
     worldbody_pattern = r'(<worldbody>)'
     replacement = r'\1\n' + floor_xml + stones_xml
     
     injected_content, count = re.subn(worldbody_pattern, replacement, mjcf_content, count=1)
-    print(f"-> Injected floor and {num_stones} stones into worldbody.")
+    if num_stones > 0:
+        print(f"-> Injected floor and {num_stones} stones into worldbody.")
+    else:
+        print("-> Injected floor into worldbody.")
     return injected_content
 
+def add_compiler_meshdir(mjcf_content):
+    """
+    Adds the meshdir attribute to the compiler tag to ensure meshes are found.
+    """
+    # The relative path from the script's directory to the meshes directory
+    mesh_directory = "Legged_robot/meshes/"
+    
+    # Find the <compiler> tag and add the meshdir attribute
+    pattern = r'(<compiler\s*)'
+    replacement = rf'\1 meshdir="{mesh_directory}" '
+    return re.sub(pattern, replacement, mjcf_content, count=1)
+
+def scale_inertias(mjcf_content):
+    """
+    Scales up inertias and masses to prevent numerical instability.
+    Multiplies all mass values by a scale factor.
+    """
+    print("\n--- Scaling Inertias for Stability ---")
+    
+    scale_factor = 1000  # Scale up masses by 1000x to prevent numerical issues
+    
+    # Find all inertial tags and scale their mass and inertias
+    def scale_mass(match):
+        full_tag = match.group(0)
+        mass_str = match.group(1)
+        original_mass = float(mass_str)
+        scaled_mass = original_mass * scale_factor
+        return full_tag.replace(f'mass="{mass_str}"', f'mass="{scaled_mass:.10e}"')
+    
+    def scale_inertia(match):
+        full_tag = match.group(0)
+        inertia_str = match.group(1)
+        original_inertia = float(inertia_str)
+        scaled_inertia = original_inertia * (scale_factor ** 2)  # Inertia scales as mass * length^2
+        return full_tag.replace(f'diaginertia="{inertia_str} {match.group(2)} {match.group(3)}"', 
+                              f'diaginertia="{scaled_inertia:.10e} {float(match.group(2))*scale_factor**2:.10e} {float(match.group(3))*scale_factor**2:.10e}"')
+    
+    # Scale mass values
+    mass_pattern = r'(<inertial[^>]*mass=")([^"]+)(")'
+    mjcf_content = re.sub(mass_pattern, lambda m: m.group(1) + str(float(m.group(2)) * scale_factor) + m.group(3), mjcf_content)
+    
+    # Scale diagonal inertias
+    inertia_pattern = r'diaginertia="([^ ]+) ([^ ]+) ([^ ]+)"'
+    def replace_inertia(match):
+        i1, i2, i3 = float(match.group(1)), float(match.group(2)), float(match.group(3))
+        return f'diaginertia="{i1*scale_factor**2:.10e} {i2*scale_factor**2:.10e} {i3*scale_factor**2:.10e}"'
+    mjcf_content = re.sub(inertia_pattern, replace_inertia, mjcf_content)
+    
+    print(f"-> Scaled masses and inertias by factor {scale_factor}.")
+    return mjcf_content
+
+def enable_collisions(mjcf_content):
+    """
+    Enables collision detection for robot body parts and ground.
+    Sets up geom collision groups to prevent penetration.
+    """
+    print("\n--- Enabling Collision Detection ---")
+    
+    # Enable floor collisions
+    mjcf_content = mjcf_content.replace(
+        '<geom name="floor" type="plane" pos="0 0 0" size="1 1 0.1" rgba="0.8 0.9 0.8 1" condim="3"/>',
+        '<geom name="floor" type="plane" pos="0 0 0" size="1 1 0.1" rgba="0.8 0.9 0.8 1" condim="3" conaffinity="1" contype="1"/>'
+    )
+    
+    # Add collision attributes to mesh geoms - be very careful with the regex
+    # Pattern: <geom type="mesh" rgba="..." mesh="..."/>
+    def add_collision_attrs(match):
+        tag = match.group(0)
+        # Add collision attributes before the closing />
+        if tag.endswith('/>'):
+            return tag[:-2] + ' conaffinity="1" contype="1"/>'
+        else:
+            return tag + ' conaffinity="1" contype="1"'
+    
+    geom_pattern = r'<geom\s+type="mesh"\s+rgba="[^"]+"\s+mesh="[^"]+"/?>'
+    mjcf_content = re.sub(geom_pattern, add_collision_attrs, mjcf_content)
+    
+    print("-> Enabled collision detection for all geoms.")
+    return mjcf_content
+
+def inject_actuators(mjcf_content):
+    """
+    Injects a <motor> actuator for each hinge joint in the model.
+    """
+    print("\n--- Injecting Actuators ---")
+    
+    # Find all hinge joint names
+    # In the intermediate MJCF, URDF 'revolute' joints are converted to 'hinge' joints.
+    # We must search for 'hinge' here.
+    # Since 'hinge' is the default type, the attribute may be omitted.
+    # This pattern finds any <joint> that is NOT explicitly a 'free', 'ball', or 'slide' joint.
+    joint_pattern = r'<joint\s+name="([^"]+)"(?![^>]*\s+type="(?:free|ball|slide)")'
+    joint_names = re.findall(joint_pattern, mjcf_content)
+    
+    if not joint_names:
+        print("-> No hinge joints found to actuate.")
+        return mjcf_content
+        
+    actuators_xml = "\n<actuator>\n"
+    for joint_name in joint_names:
+        # Create a position-controlled motor for each joint with reduced gear ratio
+        actuators_xml += f'    <motor name="{joint_name}_motor" joint="{joint_name}" ctrllimited="true" ctrlrange="-1.0 1.0" gear="1"/>\n'
+    actuators_xml += "</actuator>\n"
+    
+    # Inject the actuator block before the closing </mujoco> tag
+    injected_content = mjcf_content.replace("</mujoco>", actuators_xml + "</mujoco>")
+    print(f"-> Injected {len(joint_names)} motor actuators.")
+    return injected_content
 try:
     with open(urdf_path, 'r') as f:
         urdf_content = f.read()
@@ -157,19 +272,57 @@ try:
 
     # --- 5. Save the intermediate MJCF model to a temporary path ---
     temp_mjcf_path = os.path.join(script_dir, "temp_legged_robot.xml")
-    mujoco.mj_printModel(model, temp_mjcf_path)
+    mujoco.mj_saveLastXML(temp_mjcf_path, model)
     print(f"Intermediate MJCF saved to '{temp_mjcf_path}'.")
 
     # --- 6. Read the intermediate MJCF content ---
     with open(temp_mjcf_path, 'r', encoding='utf-8') as f:
         intermediate_mjcf_content = f.read()
     
-    # --- 7. Inject Sites into the MJCF XML string ---
-    mjcf_with_sites = inject_sites_into_mjcf(intermediate_mjcf_content)
+    # --- 7b. Add the mesh directory to the compiler tag ---
+    mjcf_with_meshdir = add_compiler_meshdir(intermediate_mjcf_content)
 
-    # --- 7b. Inject the Environment ---
-    final_mjcf_content = inject_environment_into_mjcf(mjcf_with_sites)
+    # --- 7b2. Scale inertias for numerical stability ---
+    mjcf_scaled = scale_inertias(mjcf_with_meshdir)
+
+    # --- 7c. Inject Actuators first (before reconstruction) ---
+    mjcf_with_actuators = inject_actuators(mjcf_scaled)
+
+    # --- 7d. Inject Sites into the intermediate structure ---
+    mjcf_with_sites = inject_sites_into_mjcf(mjcf_with_actuators)
+
+    # --- 7e. Enable collisions to prevent penetration ---
+    mjcf_with_collisions = enable_collisions(mjcf_with_sites)
+
+    # --- 7f. Rebuild the XML for a robust floating base and environment ---
+    # Extract the robot's body definitions (the two legs)
+    worldbody_match = re.search(r'<worldbody>([\s\S]*?)</worldbody>', mjcf_with_collisions)
+    worldbody_content = worldbody_match.group(1)
     
+    # Remove the original static hip geom that was part of the URDF conversion
+    static_hip_geom_pattern = r'\s*<geom\s+type="mesh"\s+rgba="[^"]+"\s+mesh="hip"\s*/?\s*>\s*'
+    robot_bodies_xml = re.sub(static_hip_geom_pattern, '', worldbody_content)
+
+    # Create the new XML structure from scratch
+    final_mjcf_content = mjcf_with_collisions.split('<worldbody>')[0]  # Get everything before worldbody
+    final_mjcf_content += "  <worldbody>\n"
+    
+    # Add the environment (floor only)
+    final_mjcf_content += '    <geom name="floor" type="plane" pos="0 0 0" size="1 1 0.1" rgba="0.8 0.9 0.8 1" condim="3"/>\n'
+
+    # Add the floating hip body and nest the robot legs inside
+    final_mjcf_content += '    <body name="hip" pos="0 0 0.1">\n'
+    final_mjcf_content += '      <inertial mass="0.5" pos="0 0 0" diaginertia="0.001 0.001 0.001"/>\n'
+    final_mjcf_content += '      <joint name="root" type="free" damping="0.1"/>\n'
+    final_mjcf_content += '      <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="hip"/>\n'
+    final_mjcf_content += robot_bodies_xml
+    final_mjcf_content += "    </body>\n"
+    final_mjcf_content += "  </worldbody>\n"
+    
+    # Get everything that should come after worldbody
+    after_worldbody = mjcf_with_collisions.split('</worldbody>')[1]
+    final_mjcf_content += after_worldbody
+
     # --- 8. Save the corrected MJCF content to the final path ---
     final_mjcf_content = final_mjcf_content.lstrip() # Clean any leading whitespace
     with open(mjcf_output_path, 'w', encoding='utf-8') as f:

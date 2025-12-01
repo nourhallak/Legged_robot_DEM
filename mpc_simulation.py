@@ -1,6 +1,6 @@
 import mujoco
 import mujoco.viewer
-from mujoco.transformations import quat_mul, quat_conjugate
+from mujoco import quat_mul, quat_conjugate
 import numpy as np
 import time
 import os

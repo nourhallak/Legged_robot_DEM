@@ -1,92 +1,132 @@
-# c:\Users\hplap\OneDrive\Desktop\Masters\1. Fall2025\MECH620 - Intermediate Dynamics\Project\DEM using Python\trajectory_planning.py
+"""
+Generate realistic walking trajectories with proper gait dynamics
+- Alternating foot stance/swing phases
+- COM vertical oscillation
+- Smooth forward progression
+- ADJUSTED for kinematic constraints: feet limited to Z=0.207-0.262m
+"""
 import numpy as np
 
-def generate_and_save_trajectories(duration=4.0, dt=0.01):
-    """
-    Generates walking trajectories for a bipedal robot on rigid ground.
-    This creates coordinated motion for the Center of Mass (CoM) and both feet.
-    """
-    num_steps = int(duration / dt)
-    t = np.linspace(0, duration, num_steps)
+print("Generating realistic walking trajectories...\n")
 
-    # --- Gait Parameters ---
-    # These parameters define the walking motion.
-    # NOTE: These values are based on the small scale of the URDF. You may need to tune them.
-    step_length = 0.04  # meters
-    step_height = 0.02  # meters
-    com_height = 0.05   # meters, average height of the CoM
-    foot_y_separation = 0.02 # meters, lateral distance between feet
-    step_time = 1.0     # seconds per step
-    swing_fraction = 0.5 # fraction of step_time the foot is in the air
+# ===== KINEMATIC CONSTRAINTS FROM ROBOT GEOMETRY =====
+# From forward kinematics analysis:
+# - Minimum Z (stance phase): 0.2069 m
+# - Maximum Z (swing phase): 0.2623 m
+# - Available swing clearance: ~0.055 m
+FOOT_Z_STANCE = 0.207    # Lowest reachable Z for stance phase
+FOOT_Z_SWING = 0.257     # Z height for swing phase (0.05m clearance)
+COM_Z_MIN = 0.025        # Relative minimum COM height (0.232m absolute = 0.207 + 0.025)
+COM_Z_MAX = 0.055        # Relative maximum COM height (0.262m absolute = 0.207 + 0.055)
 
-    # --- Initial Foot Positions ---
-    # These are the neutral standing positions for the feet.
-    foot1_neutral = np.array([0, -foot_y_separation / 2, 0])
-    foot2_neutral = np.array([0,  foot_y_separation / 2, 0])
+# Walking parameters
+num_steps = 400
+stride_length = 0.16  # Total forward distance
+com_height_offset = 0.038  # COM height offset above foot stance level
+com_bounce = 0.015   # COM vertical oscillation amplitude
 
-    # --- Trajectory Arrays ---
-    com_traj = np.zeros((num_steps, 3))
-    hip_orientation_traj = np.zeros((num_steps, 4)) # For quaternion w, x, y, z
-    foot1_traj = np.zeros((num_steps, 3))
-    foot2_traj = np.zeros((num_steps, 3))
+# Create time vector
+t = np.linspace(0, 1, num_steps)
 
-    # --- Generate Trajectories Step-by-Step ---
-    for i in range(num_steps):
-        # Determine which foot is swinging based on time
-        # Foot 1 swings first, then Foot 2, and so on.
-        step_count = int(t[i] / step_time)
-        is_foot1_swing = (step_count % 2 == 0)
+# --- COM TRAJECTORY ---
+# Oscillates vertically as weight shifts between legs
+# COM Z: varies between (FOOT_Z_STANCE + COM_Z_MIN) and (FOOT_Z_SWING + COM_Z_MAX)
+com_x = stride_length * t  # Linear forward progression
+com_y = 0.005 * np.sin(4 * np.pi * t)  # Lateral sway
+com_z_base = FOOT_Z_STANCE + com_height_offset  # Nominal COM height
+com_z = com_z_base + com_bounce * np.cos(4 * np.pi * t)  # Vertical oscillation
 
-        # Phase of the current step (from 0 to 1)
-        phase = (t[i] % step_time) / step_time
+com_trajectory = np.column_stack([com_x, com_y, com_z])
 
-        # Calculate current forward progression
-        x_progression = step_count * step_length
+# --- FOOT 1 TRAJECTORY (Left leg) ---
+# Foot 1 has swing phase in first half, stance in second half
+foot1_phase = (t * 2) % 2  # 0-1: swing, 1-2: stance (wraps back to 0)
 
-        # --- Foot Trajectories ---
-        if is_foot1_swing:
-            # Foot 1 is swinging, Foot 2 is in stance
-            stance_foot_pos = foot2_neutral + [x_progression, 0, 0]
-            foot2_traj[i, :] = stance_foot_pos
+# Initialize foot positions (all x, y, z)
+foot1_x = np.zeros(num_steps)
+foot1_y = -0.01 * np.ones(num_steps)  # Left side
+foot1_z = FOOT_Z_STANCE * np.ones(num_steps)  # Start at stance height
 
-            if phase < swing_fraction: # Swing part of the step
-                swing_phase = phase / swing_fraction
-                # Foot lifts, moves forward, and lands in a smooth motion
-                foot1_traj[i, 0] = foot1_neutral[0] + x_progression + step_length * swing_phase
-                foot1_traj[i, 1] = foot1_neutral[1]
-                foot1_traj[i, 2] = foot1_neutral[2] + step_height * np.sin(swing_phase * np.pi)
-            else: # Stance part of the step (foot is on the ground)
-                foot1_traj[i, :] = foot1_neutral + [x_progression + step_length, 0, 0]
+# Swing phase: lifted and moving forward
+for i in range(num_steps):
+    phase = foot1_phase[i]
+    if phase <= 1.0:  # Swing phase (first half)
+        swing_fraction = phase
+        foot1_x[i] = (stride_length / 2) * swing_fraction + stride_length / 2 * (t[i] // 0.5)
+        # Foot swing: parabolic trajectory from FOOT_Z_STANCE to FOOT_Z_SWING and back
+        swing_lift = (FOOT_Z_SWING - FOOT_Z_STANCE) * np.sin(np.pi * swing_fraction)
+        foot1_z[i] = FOOT_Z_STANCE + swing_lift
+    else:  # Stance phase (second half)
+        foot1_x[i] = stride_length / 2 + stride_length / 2 * (t[i] // 0.5)
+        foot1_z[i] = FOOT_Z_STANCE
 
-        else:
-            # Foot 2 is swinging, Foot 1 is in stance
-            stance_foot_pos = foot1_neutral + [x_progression, 0, 0]
-            foot1_traj[i, :] = stance_foot_pos
+foot1_trajectory = np.column_stack([foot1_x, foot1_y, foot1_z])
 
-            if phase < swing_fraction: # Swing part of the step
-                swing_phase = phase / swing_fraction
-                foot2_traj[i, 0] = foot2_neutral[0] + x_progression + step_length * swing_phase
-                foot2_traj[i, 1] = foot2_neutral[1]
-                foot2_traj[i, 2] = foot2_neutral[2] + step_height * np.sin(swing_phase * np.pi)
-            else: # Stance part of the step
-                foot2_traj[i, :] = foot2_neutral + [x_progression + step_length, 0, 0]
+# --- FOOT 2 TRAJECTORY (Right leg) ---
+# Foot 2 has opposite phase (swing when foot1 is stance)
+foot2_phase = ((t * 2 + 1) % 2)  # Phase-shifted by 1
 
-        # --- CoM Trajectory ---
-        # The CoM shifts laterally to stay balanced over the stance foot.
-        com_traj[i, 0] = (foot1_traj[i, 0] + foot2_traj[i, 0]) / 2 # Move forward with average foot position
-        com_traj[i, 1] = stance_foot_pos[1] * 0.5 # Shift CoM towards stance foot
-        com_traj[i, 2] = com_height
+foot2_x = np.zeros(num_steps)
+foot2_y = 0.01 * np.ones(num_steps)  # Right side
+foot2_z = FOOT_Z_STANCE * np.ones(num_steps)  # Start at stance height
 
-        # --- Hip Orientation Trajectory ---
-        # Keep the hip horizontal (no rotation)
-        hip_orientation_traj[i, :] = np.array([1.0, 0, 0, 0]) # w, x, y, z
+# Swing phase
+for i in range(num_steps):
+    phase = foot2_phase[i]
+    if phase <= 1.0:  # Swing phase
+        swing_fraction = phase
+        foot2_x[i] = stride_length * t[i]  # Follow COM forward motion
+        # Foot swing: parabolic trajectory from FOOT_Z_STANCE to FOOT_Z_SWING and back
+        swing_lift = (FOOT_Z_SWING - FOOT_Z_STANCE) * np.sin(np.pi * swing_fraction)
+        foot2_z[i] = FOOT_Z_STANCE + swing_lift
+    else:  # Stance phase
+        foot2_x[i] = stride_length * t[i]  # Follow COM forward motion
+        foot2_z[i] = FOOT_Z_STANCE
 
-    # Save trajectories
-    np.save("com_trajectory.npy", com_traj)
-    np.save("hip_orientation_trajectory.npy", hip_orientation_traj)
-    np.save("foot1_trajectory.npy", foot1_traj)
-    np.save("foot2_trajectory.npy", foot2_traj)
-    print("Generated and saved 'com_trajectory.npy', 'hip_orientation_trajectory.npy', 'foot1_trajectory.npy', and 'foot2_trajectory.npy'")
+foot2_trajectory = np.column_stack([foot2_x, foot2_y, foot2_z])
 
-if __name__ == "__main__":
-    generate_and_save_trajectories()
+# --- VERIFY TRAJECTORIES ---
+print("=== TRAJECTORY VERIFICATION ===\n")
+
+print("COM Trajectory:")
+print(f"  X: {com_trajectory[:, 0].min():.4f} to {com_trajectory[:, 0].max():.4f} (range: {com_trajectory[:, 0].max() - com_trajectory[:, 0].min():.4f})")
+print(f"  Y: {com_trajectory[:, 1].min():.4f} to {com_trajectory[:, 1].max():.4f} (range: {com_trajectory[:, 1].max() - com_trajectory[:, 1].min():.4f})")
+print(f"  Z: {com_trajectory[:, 2].min():.4f} to {com_trajectory[:, 2].max():.4f} (range: {com_trajectory[:, 2].max() - com_trajectory[:, 2].min():.4f})")
+
+print("\nFoot 1 Trajectory:")
+print(f"  X: {foot1_trajectory[:, 0].min():.4f} to {foot1_trajectory[:, 0].max():.4f}")
+print(f"  Y: {foot1_trajectory[:, 1].min():.4f} to {foot1_trajectory[:, 1].max():.4f}")
+print(f"  Z: {foot1_trajectory[:, 2].min():.4f} to {foot1_trajectory[:, 2].max():.4f} (swing height: {foot1_trajectory[:, 2].max():.4f})")
+
+print("\nFoot 2 Trajectory:")
+print(f"  X: {foot2_trajectory[:, 0].min():.4f} to {foot2_trajectory[:, 0].max():.4f}")
+print(f"  Y: {foot2_trajectory[:, 1].min():.4f} to {foot2_trajectory[:, 1].max():.4f}")
+print(f"  Z: {foot2_trajectory[:, 2].min():.4f} to {foot2_trajectory[:, 2].max():.4f} (swing height: {foot2_trajectory[:, 2].max():.4f})")
+
+print("\n=== SAMPLE FRAMES ===\n")
+print("Frame  | COM X   | COM Z   | Foot1 Z | Foot2 Z | Description")
+print("-------|---------|---------|---------|---------|------------------")
+for i in [0, 50, 100, 150, 200, 250, 300, 350, 399]:
+    phase1 = (i / num_steps * 2) % 2
+    phase2 = ((i / num_steps * 2 + 1) % 2)
+    
+    desc1 = "Stance" if phase1 > 1 else "Swing"
+    desc2 = "Stance" if phase2 > 1 else "Swing"
+    desc = f"F1:{desc1} F2:{desc2}"
+    
+    print(f"{i:5d}  | {com_trajectory[i, 0]:.4f} | {com_trajectory[i, 2]:.4f} | {foot1_trajectory[i, 2]:.4f}  | {foot2_trajectory[i, 2]:.4f}  | {desc}")
+
+# --- SAVE TRAJECTORIES ---
+np.save("com_trajectory.npy", com_trajectory)
+np.save("foot1_trajectory.npy", foot1_trajectory)
+np.save("foot2_trajectory.npy", foot2_trajectory)
+
+print("\n✅ Trajectories saved:")
+print("   - com_trajectory.npy")
+print("   - foot1_trajectory.npy")
+print("   - foot2_trajectory.npy")
+print("\nThese represent realistic walking with:")
+print("   - Alternating foot stance/swing phases")
+print("   - COM vertical oscillation (bounce)")
+print("   - Proper forward progression")
+print("   - Foot clearance during swing phase")
