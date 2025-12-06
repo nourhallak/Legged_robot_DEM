@@ -19,7 +19,7 @@
   </asset>
 
     <worldbody>
-    <geom name="floor" type="plane" pos="0 0 0.3263" size="1 1 0.1" rgba="0.8 0.9 0.8 1" condim="3"/>
+    <geom name="floor" type="plane" pos="0 0 0.431" size="1 1 0.1" rgba="0.8 0.9 0.8 1" condim="3"/>
     <body name="hip" pos="0 -0.0049659 0.42">
       <inertial mass="0.5" pos="0 0 0" diaginertia="0.001 0.001 0.001"/>
       <joint name="root_x" type="slide" axis="1 0 0" range="-0.1 0.1" damping="0.1"/>
@@ -46,7 +46,7 @@
       </body>
     </body>
 
-      <body name="link_2_2" pos="-0.0056483 -0.0014654 0.034295" quat="0.707105 0.707108 0 0">
+      <body name="link_2_2" pos="-0.0056483 -0.0014654 0.034295" quat="0.657054 0.657056 -0.261301 0.261302">
       <inertial pos="0 -0.007 0.0015" quat="0.707107 0.707107 0 0" mass="0.07585399999999999" diaginertia="1.1249100000e-03 1.0972300000e-03 7.7529000000e-05"/>
       <joint name="hip_link_2_2" pos="0 0 0" axis="0 0 1" range="-1.57 1.57" actuatorfrcrange="-10 10"/>
       <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="link_2_2" conaffinity="1" contype="1"/>
