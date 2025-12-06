@@ -1,0 +1,37 @@
+================================================================================
+INVERSE KINEMATICS ERROR ANALYSIS REPORT
+================================================================================
+
+Total Steps Analyzed: 300
+
+LEFT FOOT ERROR STATISTICS
+----------------------------------------
+Total Magnitude Error:
+  Mean: 2.580 mm
+  Std:  2.811 mm
+  Min:  0.001 mm
+  Max:  11.225 mm
+
+Component Errors (mm):
+  X: -1.672 ± 1.984
+  Y: -0.001 ± 0.000
+  Z: +1.939 ± 2.017
+
+RIGHT FOOT ERROR STATISTICS
+----------------------------------------
+Total Magnitude Error:
+  Mean: 4.526 mm
+  Std:  4.082 mm
+  Min:  0.031 mm
+  Max:  11.642 mm
+
+Component Errors (mm):
+  X: -3.123 ± 3.100
+  Y: -0.031 ± 0.000
+  Z: +3.227 ± 2.715
+
+ERROR ACCEPTABILITY
+----------------------------------------
+Left foot < 5mm: 209/300 (69.7%)
+Right foot < 5mm: 159/300 (53.0%)
+Both < 5mm: 148/300
