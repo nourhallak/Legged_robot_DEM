@@ -131,7 +131,13 @@ def main():
             # Apply external force to push base forward and damp oscillations
             # This helps overcome the backward drag from leg swings
             forward_force = base_Kp * (target_base_x - data.qpos[0]) - base_Kd * data.qvel[0]
-            data.xfrc_applied[1, 0] = forward_force  # Apply force to hip body (body 1)
+            data.xfrc_applied[0, 0] = forward_force  # Apply force to hip body (body 0)
+            
+            # Damp rotation in place: zero out angular velocity around Z axis
+            # This prevents unwanted spinning from asymmetric leg movements
+            # Apply counter-torque to stabilize rotation
+            rotation_damping = 50.0  # Damping coefficient for rotational motion
+            data.xfrc_applied[0, 5] = -rotation_damping * data.qvel[2]  # Torque around Z axis
             
             # Step physics simulation
             mujoco.mj_step(model, data)

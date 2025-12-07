@@ -31,26 +31,26 @@ def generate_simple_walking_angles(duration=100.0, gait_period=50.0):
         if step_num % 2 == 1:
             # Swing phase: hip moves forward, knee flexes then extends
             local_phase = (phase if phase < 0.5 else phase - 0.5) * 2.0
-            left_hip[i] = standing_hip + 0.6 * np.sin(local_phase * np.pi)  # Larger stride
-            left_knee[i] = standing_knee - 0.3 * (1 - np.cos(local_phase * np.pi))  # More flex
+            left_hip[i] = standing_hip - 0.6 * np.sin(local_phase * np.pi)  # Negative = forward swing
+            left_knee[i] = standing_knee - 0.3 * (1 - np.cos(local_phase * np.pi))  # Knee flexes in swing
             left_ankle[i] = standing_ankle
         else:
-            # Stance phase
-            left_hip[i] = standing_hip - 0.15 * np.sin(phase * np.pi * 2)  # Mild hip motion
-            left_knee[i] = standing_knee
+            # Stance phase: hip stays neutral or slightly back
+            left_hip[i] = standing_hip - 0.2 * (1 - np.cos(phase * np.pi * 2))  # Slight forward bias
+            left_knee[i] = standing_knee  # Keep knee extended in stance
             left_ankle[i] = standing_ankle
         
         # RIGHT LEG: swings on even steps
         if step_num % 2 == 0:
             # Swing phase
             local_phase = (phase if phase < 0.5 else phase - 0.5) * 2.0
-            right_hip[i] = standing_hip + 0.6 * np.sin(local_phase * np.pi)  # Larger stride
-            right_knee[i] = standing_knee - 0.3 * (1 - np.cos(local_phase * np.pi))  # More flex
+            right_hip[i] = standing_hip - 0.6 * np.sin(local_phase * np.pi)  # Negative = forward swing
+            right_knee[i] = standing_knee - 0.3 * (1 - np.cos(local_phase * np.pi))  # Knee flexes in swing
             right_ankle[i] = standing_ankle
         else:
-            # Stance phase
-            right_hip[i] = standing_hip - 0.15 * np.sin(phase * np.pi * 2)
-            right_knee[i] = standing_knee
+            # Stance phase: hip stays neutral or slightly back
+            right_hip[i] = standing_hip - 0.2 * (1 - np.cos(phase * np.pi * 2))  # Slight forward bias
+            right_knee[i] = standing_knee  # Keep knee extended in stance
             right_ankle[i] = standing_ankle
     
     # Save
