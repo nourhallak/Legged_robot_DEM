@@ -14,12 +14,20 @@ import re
 def load_model_with_assets():
     """Load robot model with meshes"""
     script_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # XML is in the same directory (Test_1 failed)
     mjcf_path = os.path.join(script_dir, "legged_robot_ik.xml")
+    print(f"Script dir: {script_dir}")
+    print(f"Looking for XML at: {mjcf_path}")
+    print(f"File exists: {os.path.exists(mjcf_path)}")
     
     with open(mjcf_path, 'r') as f:
         mjcf_content = f.read()
     
-    meshes_dir = os.path.join(script_dir, "Legged_robot", "meshes")
+    # Meshes are in parent/Legged_robot/meshes
+    main_dir = os.path.dirname(script_dir)
+    meshes_dir = os.path.join(main_dir, "Legged_robot", "meshes")
+    print(f"Looking for meshes at: {meshes_dir}")
     pattern = r'file="([^"]+\.STL)"'
     mesh_files = set(re.findall(pattern, mjcf_content))
     
@@ -29,7 +37,9 @@ def load_model_with_assets():
         if os.path.exists(abs_path):
             with open(abs_path, 'rb') as f:
                 assets[mesh_file] = f.read()
+                print(f"Loaded: {mesh_file}")
     
+    print(f"Loaded {len(assets)} mesh assets")
     model = mujoco.MjModel.from_xml_string(mjcf_content, assets=assets)
     return model
 
